@@ -93,7 +93,7 @@ Let's step through this line by line. The first few lines:
     .file   "hello.c"
 ```
 
-Lines that start with a period are generally assembler directives and not assembly code. `.file` lets the debugger know the original source code file that generated this assembly code. It does not run any commands. 
+Lines that start with a period are generally assembler directives and not assembly code. `.file` lets the debugger know the original source code file that generated this assembly code. It does not run any commands.<sup>1</sup>
 
 ```
     .section    .rodata
@@ -126,9 +126,30 @@ These compiler directives are notes for the debugger and linker that indicate th
     movl    $13, -4(%rbp)
 ```
 
-The first command we see is `pushq`, which saves the contents of the `rbp` register onto the stack. There are two important things to note here about GAS x86 syntax:
-1. Instructions ussually have a suffix that indicates the size of the operation being carried out. In this scenario:q!
+This whole chunk of code sets up the stack, the part of memory that can be used by this function for storing temporary variables, and passing and returning command line arguments. Registers in GAS x86 syntax start with a `%`, so the registers in this chunk of code are `%rbp` and `%rsp`. `%rsp` points to the beginning of a function's part of the stack and `%rbp` points to the end. Note that as `main` is called, the stack currently points to the part of the stack of the function that called us. Often the first step in a function is to set up the stack for our use and this is called *setting up a stack frame*.
 
+The first command we see is `pushq`, which saves the contents of the `%rbp` register onto the stack. There are a few important concepts here:
+1. When we set up our stack frame, we need to restore everything to how it was before. So, we save `%rbp` so we can remember where the stack pointed to before our function was called.
+2. Instructions ussually have a suffix that indicates the size of the operation being carried out. In this scenario `pushq` has a `q` at the end, indicating that it is a quad word. Here is a table explaining the different sizes of operations:<sup>1</sup>
+
+| Suffix | Meaning | Length |
+| :--- | :--- | :--- |
+| b | Byte | 8 bit |
+| s | Short | 16 bit integer or 32-bit floating point |
+| w | Word | 16 bit |
+| l | Long | 32 bit integer or 64-bit floating point |
+| q | Quad/Quadword | 64 bit |
+| t | Ten bytes | 80-bit floating point |
+
+3. We do not store `%rbp` in registers because there are a finite number of registers and we do not know if other subroutines will clobber any register. It is important that we do not lose track of this address, so we place it on the stack in a specific spot.
+
+Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $16, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 16 is just some arbitrary amount based on specifications by the operation system. 
+
+Note the command `movl $13, -4(%rbp)`. Recall that we instantiated an integer with a value of 13. We called it `i`, but it appears that this name was lost. It is just an integer living at the memory address `-4(%rbp)`, which evaluates to: `%rbp` - 4. This also verifies the idea of scope. `i` was created within the scope of the `main` block. Later on, after `main` finishes, it should not be accessible by the previous function. This is implemented by reverting the stack to it's original state by moving the stack pointer. This is called *popping the stack* (which you should look forward to later on in the code). 
 
 
 lines beginning with periods, like ".file", ".def", or ".ascii" are assembler directives -- commands that tell the assembler how to assemble the file. The lines beginning with some text followed by a colon, like "_main:", are labels, or named locations in the code. The other lines are assembly instructions. 
+
+## References
+
+<sup>1</sup>https://en.wikibooks.org/wiki/X86_Assembly/GAS_Syntax

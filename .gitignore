@@ -1,3 +1,6 @@
+# Lab specific
+*.s
+
 # Prerequisites
 *.d
 

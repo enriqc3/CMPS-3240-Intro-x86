@@ -130,7 +130,7 @@ This whole chunk of code sets up the stack, the part of memory that can be used 
 
 The first command we see is `pushq`, which saves the contents of the `%rbp` register onto the stack. There are a few important concepts here:
 1. When we set up our stack frame, we need to restore everything to how it was before. So, we save `%rbp` so we can remember where the stack pointed to before our function was called.
-2. Instructions ussually have a suffix that indicates the size of the operation being carried out. In this scenario `pushq` has a `q` at the end, indicating that it is a quad word. Here is a table explaining the different sizes of operations:<sup>1</sup>
+2. Instructions ussually have a suffix that indicates the size of the operation being carried out. In this scenario `pushq` has a `q` at the end, indicating that it is a quad word. Here is a table explaining the different sizes of operations. A word is 16 bits in x86 because this was defined by the first x86 processor, the 4004 back in the 1970's. <sup>1</sup>
 
 | Suffix | Meaning | Length |
 | :--- | :--- | :--- |

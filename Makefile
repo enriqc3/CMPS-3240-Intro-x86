@@ -39,3 +39,6 @@ assemble: hello.o
 
 hello.o: hello.s
 	$(COMPILER) $(FLAGS) -c hello.s -o hello.o
+
+clean: 
+	rm -f *.o *.s *.out

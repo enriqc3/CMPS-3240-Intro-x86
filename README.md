@@ -36,7 +36,7 @@ odin.cs.csubak.edu has these already installed.
 
 | Linux | Mac | Windows |
 | :--- | :--- | :--- |
-| Yes, but must be on odin.cs.csubak.edu | No | No |
+| Yes, but must be on odin.cs.csubak.edu due to GCC and kernel differences | No | No |
 
 This lab requires you to assemble an x86 program, the syntax and calling conventions of which are specific down to the operating system and version of GCC you are using. This lab manual is written assuming that you're on the department's server, odin.cs.csubak.edu. Future labs may have compatability with other environments.
 
@@ -58,7 +58,7 @@ There is a makefile that will help with compiling the code. For this lab manual 
 
 ## Approach
 
-### Part 1 - `hello.c`
+### Part 1 - `hello.s`
 
 Use your favorite CUI text editor to open up `hello.c`:
 
@@ -67,8 +67,6 @@ $ vim hello.c
 ```
 
 There should be no surprises here. `stdio.h` contains the `printf` function which is used to display a string literal to the screen. We also declare a variable in the scope of `main()` called `i`, and initialize it with the number 13. A prime number, my favorite number, and also a very specific number that will be easy to identify when we're looking at the assembly code. Recall that 0 is the appropriate value to return from `main` if the program completed without any errors. Enter `:q` to quit vim.
-
-### Part 2 - `hello.s`
 
 You've probably used gcc to compile C code into a binary executable, but we're going to use it to generate assembly source code for us to look at. Execute the `hello.s` target in the makefile like so:
 
@@ -103,7 +101,7 @@ Lines that start with a period are generally assembler directives and not assemb
 
  `.section .rodata` declares that the following lines are read-only parts of memory. The items in this section are variables stored in memory and are organized by the identifier, data type and the literal value. 
  
- `.LC0:` is a tag, it indicates that the rest of the contents of the line, or what immidiately follows the line, should be associated with the identifier in the tag. Note that when we declared the string literal "Hello world!" we declared any `char*` by a specific name, so the compiler created a name for us automatically. `.string` indicates that the data type is a string. We can infer that this data type gets automatically null terminated by the compiler.
+ `.LC0:` is a tag, it indicates that the rest of the contents of the line, or what immidiately follows the line, should be associated with the identifier in the tag. Note that when we declared the string literal "Hello world!" we did not associate it with an identifier. The compiler created a read-only variable for us automatically called `.LC0`. `.string` indicates that the data type is a string.
  
  ```
     .text
@@ -143,13 +141,48 @@ The first command we see is `pushq`, which saves the contents of the `%rbp` regi
 
 3. We do not store `%rbp` in registers because there are a finite number of registers and we do not know if other subroutines will clobber any register. It is important that we do not lose track of this address, so we place it on the stack in a specific spot.
 
-Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $16, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 16 is just some arbitrary amount based on specifications by the operation system. 
+Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $16, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 16 is just some arbitrary amount based on specifications by the operating system. 
 
 Note the command `movl $13, -4(%rbp)`. Recall that we instantiated an integer with a value of 13. We called it `i`, but it appears that this name was lost. It is just an integer living at the memory address `-4(%rbp)`, which evaluates to: `%rbp` - 4. This also verifies the idea of scope. `i` was created within the scope of the `main` block. Later on, after `main` finishes, it should not be accessible by the previous function. This is implemented by reverting the stack to it's original state by moving the stack pointer. This is called *popping the stack* (which you should look forward to later on in the code). 
 
+The following code calls `printf`. Note that to call `printf`, we must set up the arguments and then make the call:
 
-lines beginning with periods, like ".file", ".def", or ".ascii" are assembler directives -- commands that tell the assembler how to assemble the file. The lines beginning with some text followed by a colon, like "_main:", are labels, or named locations in the code. The other lines are assembly instructions. 
+```
+    leaq    .LC0(%rip), %rdi
+    movl    $0, %eax
+    call    printf@PLT
+    movl    $0, %eax
+```
+
+`call` obviously calls the `printf` function. Arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9`.
+Additional arguments, if needed, are passed in stack slots immmediately above the return address.<sup>2</sup> We pass a pointer to the string literal `.LC0`. See reference 2 for how addresses are calculated. `%rip` literally means 'here', and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory. This is why `%rip` is used.
+
+*You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
+
+Finally, we have two more instructions:
+
+```
+    leave
+    ret
+````
+
+`leave` cleans up the stack for us. In other assembly languages you need to manually move the stack pointers but x86 has a convienient instruction to pop the whole stack for us. `ret` returns from the function. Let's reassemble the program. The `assemble` target in the makefile will do this for us.
+
+```
+$ make assemble
+```
+
+and you should get:
+
+```
+$ ./hello.out
+Hello world!
+```
+
+
 
 ## References
 
 <sup>1</sup>https://en.wikibooks.org/wiki/X86_Assembly/GAS_Syntax
+<sup>2</sup>https://www.lri.fr/~filliatr/ens/compil/x86-64.pdf
+<sup>3</sup>https://stackoverflow.com/questions/6212665/why-is-eax-zeroed-before-a-call-to-printf

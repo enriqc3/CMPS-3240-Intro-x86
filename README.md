@@ -151,7 +151,6 @@ The following code calls `printf`. Note that to call `printf`, we must set up th
     leaq    .LC0(%rip), %rdi
     movl    $0, %eax
     call    printf@PLT
-    movl    $0, %eax
 ```
 
 `call` obviously calls the `printf` function. Arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9`.
@@ -162,11 +161,12 @@ Additional arguments, if needed, are passed in stack slots immmediately above th
 Finally, we have two more instructions:
 
 ```
+    movl    $0, %eax
     leave
     ret
 ````
 
-`leave` cleans up the stack for us. In other assembly languages you need to manually move the stack pointers but x86 has a convienient instruction to pop the whole stack for us. `ret` returns from the function. Let's reassemble the program. The `assemble` target in the makefile will do this for us.
+`leave` cleans up the stack for us. In other assembly languages you need to manually move the stack pointers but x86 has a convienient instruction to pop the whole stack for us. `ret` returns from the function. Let's reassemble the program. The `assemble` target in the makefile will do this for us. Function return values are stored in a single register, `%ax`. These last three instructions are `return 0;` in C.
 
 ```
 $ make assemble
@@ -209,7 +209,6 @@ Now, we insert a second call to `printf` via the following instructions:
     mov    -4(%rbp), %rsi
     movl    $0, %eax
     call    printf@PLT
-    movl    $0, %eax
 ```
 
 The only differences between this second call and the first are that we refer to `.myString` that we inserted rather than `.LC0`, and that we provide a second argument in `%rsi`. Recall that the variable `i` is stored on the stack at memory address `-4(%rbp)`. I suppose we could have put `$13` there (for literal 13) but in this scenario we want to print `i` (whatever value that might be). Save your changes and if everything went well you should get:

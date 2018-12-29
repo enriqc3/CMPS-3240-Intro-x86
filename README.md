@@ -206,7 +206,7 @@ Now, we insert a second call to `printf` via the following instructions:
 
 ```   
     leaq    .myString(%rip), %rdi
-    mov    -4(%rbp), %rsi
+    movl    -4(%rbp), %rsi
     movl    $0, %eax
     call    printf@PLT
 ```

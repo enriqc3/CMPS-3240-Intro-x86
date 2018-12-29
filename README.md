@@ -155,7 +155,7 @@ The following code calls `printf`. Note that to call `printf`, we must set up th
 ```
 
 `call` obviously calls the `printf` function. Arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9`.
-Additional arguments, if needed, are passed in stack slots immmediately above the return address.<sup>2</sup> We pass a pointer to the string literal `.LC0`. See reference 2 for how addresses are calculated. `%rip` literally means 'here', and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory. This is why `%rip` is used.
+Additional arguments, if needed, are passed in stack slots immmediately above the return address.<sup>2</sup> We pass a pointer to the string literal `.LC0`. The `lea` instruction loads the address, rather than the value, into a register. See reference 2 for how addresses are calculated. `%rip` literally means 'here', and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory. This is why `%rip` is used.
 
 *You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
 
@@ -189,6 +189,40 @@ Have you heard the tale of Darth Plagueis the wise...
 
 ### Part 2 - Print `i`
 
+The goal of this part of the lab is to execute the following instruction:
+
+```c
+printf("%d%", i);
+```
+
+*but to do this via assembly instructions.* First, we must insert `"%d%"`as a string literal. Add the following instructions to the `.rodata` section:
+
+```
+.myString:
+    .string "%d"
+```
+
+Now, we insert a second call to `printf` via the following instructions:
+
+```   
+    leaq    .myString(%rip), %rdi
+    mov    -4(%rbp), %rsi
+    movl    $0, %eax
+    call    printf@PLT
+    movl    $0, %eax
+```
+
+The only differences between this second call and the first are that we refer to `.myString` that we inserted rather than `.LC0`, and that we provide a second argument in `%rsi`. Recall that the variable `i` is stored on the stack at memory address `-4(%rbp)`. I suppose we could have put `$13` there (for literal 13) but in this scenario we want to print `i` (whatever value that might be). Save your changes and if everything went well you should get:
+
+```
+$ make assemble
+$ ./hello.out
+Have you heard the tale of Darth Plagueis the wise...13
+```
+
+## Check off
+
+Demonstrate that output of part 2. You must have completed this via x86, and not C.
 
 ## References
 

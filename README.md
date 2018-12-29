@@ -179,6 +179,15 @@ $ ./hello.out
 Hello world!
 ```
 
+If you want to get creative at this point you can modify `hello.s` line 4 to say something else:
+
+```
+$ make assemble
+$ ./hello.out
+Have you heard the tale of Darth Plagueis the wise...
+```
+
+### Part 2 - Print `i`
 
 
 ## References

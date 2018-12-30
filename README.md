@@ -242,8 +242,13 @@ Demonstrate that output of part 2. You must have completed this via x86, and not
 ## References
 
 <sup>1</sup>https://en.wikibooks.org/wiki/X86_Assembly/GAS_Syntax
+
 <sup>2</sup>https://www.lri.fr/~filliatr/ens/compil/x86-64.pdf
+
 <sup>3</sup>https://stackoverflow.com/questions/6212665/why-is-eax-zeroed-before-a-call-to-printf
+
 <sup>4</sup>https://www.nayuki.io/page/a-fundamental-introduction-to-x86-assembly-programming 
+
 <sup>5</sup>http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html
+
 <sup>6</sup>https://www3.nd.edu/~dthain/courses/cse40243/fall2015/intel-intro.html

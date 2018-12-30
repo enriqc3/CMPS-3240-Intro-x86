@@ -237,7 +237,7 @@ Have you heard the tale of Darth Plagueis the wise...13
 
 ## Check off
 
-Demonstrate that output of part 2. You must have completed this via x86, and not C.
+Demonstrate the output of part 2. You must completed this via x86, and not C.
 
 ## References
 

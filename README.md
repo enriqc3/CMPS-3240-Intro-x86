@@ -1,15 +1,15 @@
 # CMPS-3240-Introduction-x86
-Bottom-up "Hello world!"
+Reverse "Hello world!"
 
 ## Objectives
 
-* Know how to generate x86 assembly code (GAS syntax) assembly mnemonics from C code with GCC
+* Know how to generate x86 assembly mnemonics (GAS syntax) from C code with GCC
 * Know how to assemble an executable binary from x86 assembly code
 * Become acquainted with GAS syntax of x86 assembly code
 
 ## Prerequisites
 
-* Know about the compiler, assembler and linker. Refer to Appendix A-1. Note that the book covers MIPS, and we will be using x86 for labs.
+* Know about the compiler, assembler and linker. Refer to Appendix A-1. Note that the book covers MIPS, and we will be using x86 for labs. These languages are different.
 * Read about x86 assembly. We will be using GAS syntax specifically (not NASM). Some helpful resources are posted in the reference section. Read sections 0-8 in reference 4. Read reference 5 for a helpful explanation of instructions and how the stack works (passing arguments between subroutines). Finally, Read reference 6 for a helpful breakdown of what we intend to do with today's lab. Know that they used a different version of GCC so our version will be slightly different.
 
 ## Requirements
@@ -22,7 +22,7 @@ Bottom-up "Hello world!"
 
 ### Software
 
-This lab requires the following software:
+This lab requires the following software: 
 
 * `gcc`
 * `make`
@@ -36,27 +36,23 @@ odin.cs.csubak.edu has these already installed.
 | :--- | :--- | :--- |
 | Must be on odin.cs.csubak.edu<sup>*</sup> | No<sup>*</sup> | No<sup>*</sup> |
 
-<sup>*</sup>Due to the possibility of different GCC and OS/kernel causing different syntax when assembling mnemonics.
+<sup>*</sup>Differences in GCC version and OS/kernel versions will cause big differences in how C code is translated to machine code.  
 
-This lab requires you to assemble an x86 program, the syntax and calling conventions of which are specific down to the operating system and version of GCC you are using. This lab manual is written assuming that you're on the department's server, odin.cs.csubak.edu. Future labs may have relaxed compatability with other environments.
+This lab requires you to assemble an x86 program, the syntax and calling conventions of which are specific down to the operating system and version of GCC you are using. This lab manual is written assuming that you're on the department's server, `odin.cs.csubak.edu`. Future labs may have relaxed compatability with other environments.
 
 ## Background
 
 Today's lab consists of the following tasks:
 1. Study a version of hello world in C language
-1. Use gcc to generate x86 assembly code
-1. Study x86 assembly code, and tweak it a bit
+1. Use `gcc` to generate x86 assembly code
+1. Study x86 assembly code
+1. Modify the assembly code
 1. Use gcc again to assemble a working binary from the x86 assembly code
 
-This lab is a learning-by-doing lab, so there is not much background. Assuming you've already remotely connected to odin, clone this repository:
+This lab is a learning-by-doing lab, so there is not much background. Assuming you've already remotely connected to odin, clone this repository and change into that directory:
 
 ```shell
 $ git clone https://github.com/DrAlbertCruz/CMPS-3240-Introduction-x86.git
-```
-
-and change into that directory:
-
-```shell
 $ cd CMPS-3240-Introduction-x86
 ```
 
@@ -72,20 +68,24 @@ Use your favorite CUI text editor to open up `hello.c`:
 $ vim hello.c
 ```
 
-As you study the contents of this file, it should be familiar to you. `stdio.h` contains the `printf` function which is used to display a string literal to the screen. We also declare a variable in the scope of `main()` called `i`, and initialize it with the number 13. A prime number, my favorite number, and also a very specific number that will be easy to identify when we're looking at the assembly code. Recall we `return 0` from `main` if the program completes without any errors. Enter `:q` to quit vim.
+As you study the contents of this file, it should be familiar to you. `stdio.h` contains the `printf()` function which is used to display a string literal to the screen. We also declare a number of variables in the scope of `main()`:
 
-You've probably used `gcc` to compile C code into a binary executable, but we're going to use it to generate assembly source code for us to look at. Execute the `hello.s` target in the makefile like so:
+```c
+int i = 86;
+char j = 12;
+float k = 1.0;
+double l = 3.14;
+int *ptr = 0; // Null
+```
+
+Take some time remember what the size each of these should be. For example, a `char` is how many bytes? Is it signed or unsigned? Recall we `return 0;` from `main()` if the program completes without any errors. Enter `:q` to quit vim. You've probably used `gcc` to compile C code into a binary executable, but we're going to use it to generate assembly source code for us to look at. Execute the `hello.s` target in the makefile like so:
 
 ```shell
 $ make hello.s
 gcc -Wall -O0 -o hello.s -S hello.c
-hello.c: In function 'main':
-hello.c:4:9: warning: unused variable 'i' [-Wunused-variable]
-     int i = 13;
-         ^
 ```
 
-Ignore the warning. It is generated because we used the `-Wall` flag for gcc which let us know that our variable `i` was unused. The `-O0` flag is also used to prevent the compiler from doing any optimizations. Normally the compiler will do advanced things to make our code faster and we want to prevent it from making changes under the hood that we do not explicitly want to implement. Now view this file:
+The `-O0` flag is also used to prevent the compiler from doing any optimizations. Normally the compiler will do advanced things to make our code faster and we want to prevent it from making changes under the hood that we do not explicitly want to implement. The `-S` flag will tell `gcc` that we want assembly code. Now view this file:
 
 ```shell
 $ vim hello.s
@@ -101,13 +101,13 @@ Lines that start with a period are generally assembler directives and not assemb
 
 ```
     .section    .rodata
-.LC0:
+.LC2:
     .string "Hello world!"
 ```
 
- `.section .rodata` declares that the following lines are read-only parts of memory. The items in this section are variables stored in memory and are organized by the identifier, data type and the literal value. You can think of the variables declared in this section as global and `const`.
+ `.section .rodata` declares that the following lines are read-only parts of memory. The items in this section are variables stored in memory and are organized by the identifier, data type and the literal value. You can think of the variables declared in this section as global and `const`. *The compiler may have given your code a different identifier than LC2*.
  
- `.LC0:` is a tag, it indicates that the rest of the contents of the line, or what immidiately follows the line, should be associated with the identifier in the tag. Note that when we declared the string literal "Hello world!" we did not associate it with an identifier. We plugged it into the function call directly, with:
+ `.LC2:` is a tag, it indicates that the rest of the contents of the line, or what immidiately follows the line, should be associated with the identifier in the tag. Note that when we declared the string literal "Hello world!" we did not associate it with an identifier. We plugged it into the function call directly, with:
  
  ``` c
  printf( "Hello world!" );
@@ -116,8 +116,8 @@ Lines that start with a period are generally assembler directives and not assemb
 The compiler created a read-only variable for us automatically called `.LC0`. `.string` indicates that the data type is a string. If thought-of in terms of C code, it would look like this:
  
  ```c
- const char* LC0 = "Hello world!";
- printf( LC0 );
+ char* LC2 = "Hello world!";
+ printf( LC2 );
  ```
  
 Moving on, now consider: 
@@ -134,15 +134,17 @@ main:
 ```
     pushq   %rbp
     movq    %rsp, %rbp
-    subq    $16, %rsp
-    movl    $13, -4(%rbp)
+    subq    $32, %rsp
+    movl    $86, -4(%rbp)
+    movb    $12, -5(%rbp)
+    movss   .LC0(%rip), %xmm0
+    movss   %xmm0, -12(%rbp)
+    movsd   .LC1(%rip), %xmm0
+    movsd   %xmm0, -24(%rbp)
+    movq    $0, -32(%rbp)
 ```
 
-This whole chunk of code sets up the stack, the part of memory that can be used by this function for storing temporary variables, and passing and returning command line arguments (if needed). Registers in GAS x86 syntax start with a `%`, so the registers in this chunk of code are `%rbp` and `%rsp`. `%rsp` points to the beginning of a function's part of the stack and `%rbp` points to the end. Note that as `main` is called, the stack currently points to the part of the stack of the function that called us. Often the first step in a function is to set up the stack for our use and this is called *setting up a stack frame*.<sup>2</sup>
-
-The first command we see is `pushq`, which saves the contents of the `%rbp` register onto the stack. There are a few important concepts here:
-1. When we set up our stack frame, we need to restore everything to how it was before. So, we save `%rbp` so we can remember where the stack pointed to before our function was called.
-2. Instructions ussually have a suffix that indicates the size of the operation being carried out. In this scenario `pushq` has a `q` at the end, indicating that it is a quad word. Here is a table explaining the different sizes of operations. A word is 16 bits in x86 because this was defined by the first x86 processor, the 4004 back in the 1970's. <sup>1</sup>
+There's a whole lot going on here. Before we move on you must understand that x86 instructions, unlike MIPS, must specify the word length in the operation name. For example: `pushq` is a `push` command with word length `q` indicating quad word. In x86, a word is 16-bits, thus 4 * 16 = 64 bits. `movl` means `mov` with word length `l`. Here is a table explaining common formats:
 
 | Suffix | Meaning | Length |
 | :--- | :--- | :--- |
@@ -153,13 +155,29 @@ The first command we see is `pushq`, which saves the contents of the `%rbp` regi
 | q | Quad/Quadword | 64 bit |
 | t | Ten bytes | 80-bit floating point |
 
-3. We do not store `%rbp` in registers because there are a finite number of registers and we do not know if other subroutines will clobber any register. It is important that we do not lose track of this address, so we place it on the stack in a specific spot. The *calling convention* you are using dictates where it is placed. If you were wondering, we are wondering System V.
+This whole chunk of code sets up the stack, the part of memory that can be used by this function for storing temporary variables, and passing and returning command line arguments (if needed). Registers in GAS x86 syntax start with a `%`, so the registers in this chunk of code are `%rbp` and `%rsp`. `%rsp` points to the beginning of a function's part of the stack and `%rbp` points to the end. Note that as `main` is called, the stack currently points to the part of the stack of the function that called us. Often the first step in a function is to set up the stack for our use and this is called *setting up a stack frame*.<sup>2</sup>
 
-Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $16, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 16 is just some arbitrary amount based on specifications by the operating system and calling convention.
+The first command we see is `pushq`, which saves the contents of the `%rbp` register onto the stack. There are a few important concepts here:
+1. When we set up our stack frame, we need to restore everything to how it was before. So, we save `%rbp` so we can remember where the stack pointed to before our function was called.
+1. We do not store `%rbp` in registers because there are a finite number of registers and we do not know if other subroutines will clobber any register. It is important that we do not lose track of this address, so we place it on the stack in a specific spot. The *calling convention* you are using dictates where it is placed. 
 
-Note the command `movl $13, -4(%rbp)`. Recall that we instantiated an integer with a value of 13. We called it `i`, but it appears that this name was lost. It is just an integer living at the memory address `-4(%rbp)`, which evaluates to: `%rbp` - 4. This also verifies the idea of scope. `i` was created within the scope of the `main` block. Later on, after `main` finishes, it should not be accessible by the previous function. This is implemented by reverting the stack to it's original state by moving the stack pointer. This is called *popping the stack* (which you should look forward to later on in the code). *Aside: This does not actually zero out or remove the value from the stack, it just moves the base and stack pointers. If someone knows where to look on the stack this is a potential security vulnerability, but discussion of it is beyond the scope of the class.*
+Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $32, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 
 
-The following code calls `printf`. Note that to call `printf`, we must set up the arguments and then make the call:
+Note the command `movl $86, -4(%rbp)`. Recall that we instantiated an integer with a value of 86. We called it `i`, but it appears that this name was lost. It is just an integer living at the memory address `-4(%rbp)`, which evaluates to: `%rbp` - 4. This also verifies the idea of scope. `i` was created within the scope of the `main` block. Later on, after `main` finishes, it should not be accessible by the previous function. This is implemented by reverting the stack to it's original state by moving the stack pointer. This is called *popping the stack* (which you should look forward to later on in the code). *Aside: This does not actually zero out or remove the value from the stack, it just moves the base and stack pointers. If someone knows where to look on the stack this is a potential security vulnerability, but discussion of it is beyond the scope of the class.*
+
+Based on initialization values and suffixes of the operation, you should be able to track down where each variable "lives" on the stack. For example, we initialized a `char`, a single byte, to `$12`, and it's pretty clearly the `movb $12, -5(%rbp)` command. Also note the spacing. Because it is only a byte, it is located 1 byte away from `i`. The floating point values are different in many ways:
+
+* They are larger, and require more spacing.
+* They have their own suffix `sd` and `ss` standing for scalar double and scalar single respectively.
+* One does not enter a fractional literal at the machine language level. Fractional numbers are stored in their own format (IEEE-754) that does not translate to a readable number if the binary representation is converted to decimal. Note that the compiler placed these literals (which are essentially unreadable by us at this point) here:
+
+```c
+    .align 4
+.LC0:
+    .long   1065353216
+```
+
+Moving on past the stack, the following code calls `printf`. Note that to call `printf`, we must set up the arguments and then make the call:
 
 ```
     leaq    .LC0(%rip), %rdi
@@ -194,12 +212,12 @@ $ ./hello.out
 Hello world!
 ```
 
-If you want to get creative at this point you can modify `hello.s` line 4 to say something else:
+If you want to get creative at this point you can modify `hello.s` line 4 to say something else, and you might want to throw in a new line while youre at it (`\n`):
 
 ```
 $ make assemble
 $ ./hello.out
-Have you heard the tale of Darth Plagueis the wise...
+There is a realm of existence so far beyond your own you cannot even imagine it. I am beyond your comprehension. I am x.
 ```
 
 ### Part 2 - Print `i`
@@ -227,12 +245,13 @@ after `.LC0`. Now, we insert a second call to `printf` via the following instruc
     call    printf@PLT
 ```
 
-after `call printf@PLT`. The only differences between this second call and the first are that we refer to `.myString` that we inserted rather than `.LC0`, and that we provide a second argument in `%rsi`. Recall that the variable `i` is stored on the stack at memory address `-4(%rbp)`. I suppose we could have put `movl $13, %rsi` but in this scenario we want to print `i` (whatever value that might be). Save your changes and if everything went well you should get:
+after `call printf@PLT`. The only differences between this second call and the first are that we refer to `.myString` that we inserted rather than `.LC0`, and that we provide a second argument in `%rsi`. Recall that the variable `i` is stored on the stack at memory address `-4(%rbp)`. I suppose we could have put `movl $86, %rsi` but in this scenario we want to print `i` (whatever value that might be). Save your changes and if everything went well you should get:
 
 ```
 $ make assemble
 $ ./hello.out
-Have you heard the tale of Darth Plagueis the wise...13
+There is a realm of existence so far beyond your own you cannot even imagine it. I am beyond your comprehension. I am x.
+86
 ```
 
 ## Check off

@@ -2,7 +2,7 @@
 
 # This is how you declare variables
 COMPILER=gcc
-FLAGS=-Wall -O0
+FLAGS=-O0
 
 # Calling 'make' will execute the first target in the 'makefile'. This is the
 # first target. By convention it's ussually 'all', which compiles the main part

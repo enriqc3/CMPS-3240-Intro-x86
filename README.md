@@ -10,13 +10,13 @@ Reverse "Hello world!"
 ## Prerequisites
 
 * Know about the compiler, assembler and linker. Refer to Appendix A-1. Note that the book covers MIPS, and we will be using x86 for labs. These languages are different.
-* Read about x86 assembly. We will be using GAS syntax specifically (not NASM). Some helpful resources are posted in the reference section. Read sections 0-8 in reference 4. Read reference 5 for a helpful explanation of instructions and how the stack works (passing arguments between subroutines). Finally, Read reference 6 for a helpful breakdown of what we intend to do with today's lab. Know that they used a different version of GCC so our version will be slightly different.
+* Read about x86 assembly. We will be using GAS syntax specifically (not NASM). Some helpful resources are posted in the reference section. Read sections 0-8 in reference 4. Read reference 5 for a helpful explanation of instructions and how the stack works (passing arguments between subroutines). Finally, Read reference 6 for a helpful breakdown of what we intend to do with today's lab. They used a different version of GCC so our version will be slightly different.
 
 ## Requirements
 
 ### General
 
-* Knowledge of linux CLI and GCC
+* Knowledge of linux command line interface (CLI) and `gcc`
 * Some experience with C language `printf()`
 * Some experience with `make`
 
@@ -28,13 +28,13 @@ This lab requires the following software:
 * `make`
 * `git`
 
-odin.cs.csubak.edu has these already installed.
+`odin.cs.csubak.edu` has these already installed.
 
 ### Compatability
 
 | Linux | Mac | Windows |
 | :--- | :--- | :--- |
-| Must be on odin.cs.csubak.edu<sup>*</sup> | No<sup>*</sup> | No<sup>*</sup> |
+| Must be on `odin.cs.csubak.edu`<sup>*</sup> | No<sup>*</sup> | No<sup>*</sup> |
 
 <sup>*</sup>Differences in GCC version and OS/kernel versions will cause big differences in how C code is translated to machine code.  
 
@@ -55,8 +55,6 @@ This lab is a learning-by-doing lab, so there is not much background. Assuming y
 $ git clone https://github.com/DrAlbertCruz/CMPS-3240-Introduction-x86.git
 $ cd CMPS-3240-Introduction-x86
 ```
-
-There is a makefile that will help with compiling the code. For this lab manual I'm assuming you've worked with make files before. If you haven't, the `makefile` included in this repository is simple enough to learn off of. Take the time to read the comments if this is your first time. Let's get started then...
 
 ## Approach
 

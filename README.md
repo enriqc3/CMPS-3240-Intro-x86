@@ -16,19 +16,11 @@ Reverse "Hello world!"
 
 ### General
 
-* Knowledge of linux command line interface (CLI) and `gcc`
 * Some experience with C language `printf()`
-* Some experience with `make`
 
 ### Software
 
-This lab requires the following software: 
-
-* `gcc`
-* `make`
-* `git`
-
-`odin.cs.csubak.edu` has these already installed.
+This lab requires the following software: `gcc`, `make`, `git`. `odin.cs.csubak.edu` has these already installed.
 
 ### Compatability
 

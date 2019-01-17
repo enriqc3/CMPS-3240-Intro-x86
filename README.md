@@ -1,5 +1,5 @@
-# CMPS-3240-Introduction-x86
-Reverse "Hello world!"
+# CMPS-3240-Intro-x86
+Introduction to the x86 assembly language
 
 ## Objectives
 

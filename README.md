@@ -230,7 +230,7 @@ after `.LC0`. Now, we insert a second call to `printf` via the following instruc
 
 ```   
     leaq    .myString(%rip), %rdi
-    movl    -4(%rbp), %rsi
+    movq    -4(%rbp), %rsi
     movl    $0, %eax
     call    printf@PLT
 ```

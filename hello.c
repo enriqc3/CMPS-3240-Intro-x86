@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main() {
-    int i = 13;
+    int i = 86;
     char j = 12;
     float k = 1.0;
     double l = 3.14;

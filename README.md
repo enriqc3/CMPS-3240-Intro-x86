@@ -212,14 +212,14 @@ There is a realm of existence so far beyond your own you cannot even imagine it.
 
 ### Part 2 - Print `i`
 
-The goal of this part of the lab is to append the following instruction, after `Hello world!`:
+The goal of this part of the lab is to modify the code at the assembly level, and compile the assembly-level code with GCC. At the C-level, our goal is to execute the following after `Hello world!`:
 
 ```c
 printf("Hello world!"); // Previously there
 printf("%d%", i); // The new code we will implement, but through x86 and not C
 ```
 
-First, we must insert `"%d%"`as a string literal. Add the following instructions to the `.rodata` section:
+*However, we want to do this at the assembly-level.* Open `hello.s`. The first step is to place a string literal in memory, we must insert`"%d%"` to the `.rodata` section:
 
 ```
 .myString:
@@ -243,6 +243,8 @@ $ ./hello.out
 Hello world!
 86
 ```
+
+*Optional: The commands needed to compile assembly code to binary are not the same as compiling C-code to binary. If you're curious, look at the `makefile` directives `hello.o` and `hello.s`.*
 
 ## Check off
 

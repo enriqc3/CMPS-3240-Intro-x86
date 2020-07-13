@@ -240,7 +240,7 @@ after `call printf@PLT`. The only differences between this second call and the f
 ```
 $ make assemble
 $ ./hello.out
-There is a realm of existence so far beyond your own you cannot even imagine it. I am beyond your comprehension. I am x.
+Hello world!
 86
 ```
 

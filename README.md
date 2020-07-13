@@ -244,7 +244,7 @@ Hello world!
 86
 ```
 
-*Optional: The commands needed to compile assembly code to binary are not the same as compiling C-code to binary. If you're curious, look at the `makefile` directives `hello.o` and `hello.s`.*
+*Optional: The commands needed to compile assembly code to binary are not the same as compiling C-code to binary. If you're curious, look at the `makefile` directives `hello.o` and `assemble`.*
 
 ## Check off
 

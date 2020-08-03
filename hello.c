@@ -7,6 +7,6 @@ int main() {
     double l = 3.14;
     int *ptr = 0; // Null
 
-    printf( "Hello world!" );
+    printf( "Hello, I'm working!" );
     return 0;
 }

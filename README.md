@@ -73,7 +73,7 @@ This lab uses `gcc` to compile binaries. With Macintosh computers, `gcc` is an a
 
 #### Windows
 
-It is possible for you to continue this lab on Windows if you install the Windows Subsystem for Linux (WSL). Please make sure you install Debian 10 for consistency with the lab manual. Once this is done refer to the Linux subsection for installation/checking of appropriate software.
+It is possible for you to continue this lab on Windows if you install the Windows Subsystem for Linux (WSL).<sup>8</sup> Please make sure you install Debian 10 for consistency with the lab manual. Once this is done refer to the Linux subsection for installation/checking of appropriate software. Keep in mind that WSL maintains a separate home directory from the local Windows user, so you may want to use symbolic links to save time when navigating to things you download/edit.
 
 ## Background
 
@@ -101,7 +101,7 @@ Use your favorite CUI text editor to open up `hello.c`:
 $ vim hello.c
 ```
 
-As you study the contents of this file, it should be familiar to you. `stdio.h` contains the `printf()` function which is used to display a string literal to the screen. We also declare a number of variables in the scope of `main()`:
+`vim` is just one example of a command-line text editor, you can use which ever one is your favorite (such as `emacs`), or if you're using WSL or Linux locally you can use a GUI text editor (such as `atom`, Notepad++, etc.). As you study the contents of `hello.c`, it should be familiar to you. `stdio.h` contains the `printf()` function which is used to display a string literal to the screen. We also declare a number of variables in the scope of `main()`:
 
 ```c
 int i = 86;
@@ -111,14 +111,19 @@ double l = 3.14;
 int *ptr = 0; // Null
 ```
 
-Take some time remember what the size each of these should be. For example, a `char` is how many bytes? Is it signed or unsigned? Recall we `return 0;` from `main()` if the program completes without any errors. Enter `:q` to quit vim. You've probably used `gcc` to compile C code into a binary executable, but we're going to use it to generate assembly source code for us to look at. Execute the `hello.s` target in the makefile like so:
+Take some time remember what the size each of these should be. For example, a `char` is how many bytes? Is it signed or unsigned? Recall we `return 0;` from `main()` if the program completes without any errors.<sup>7</sup> Enter `:q` to quit vim. You've probably used `gcc` to compile C code into a binary executable, but we're going to use it to generate assembly source code for us to look at. Execute the following `gcc` command:
 
 ```shell
-$ make hello.s
-gcc -Wall -O0 -o hello.s -S hello.c
+$ gcc -Wall -O0 -o hello.s -S hello.c
 ```
 
-The `-O0` flag is also used to prevent the compiler from doing any optimizations. Normally the compiler will do advanced things to make our code faster and we want to prevent it from making changes under the hood that we do not explicitly want to implement. The `-S` flag will tell `gcc` that we want assembly code. Now view this file:
+On my WSL running Debian 10 I get the following output:
+
+```shell
+$ gcc -O0 -o hello.s -S hello.c
+```
+
+`gcc` is the command. The `-O0` flag is also used to prevent the compiler from doing any optimization. Normally the compiler will do advanced things to make our code faster and we want to prevent it from making changes under the hood that we do not explicitly want to implement. The `-o hello.s` part indicates that the output file should be `hello.s`. `.s` extension is on possible file extension for assembly code (the other common one is `.asm`). The `-S` flag will tell `gcc` that we want assembly code. Finally, the last part of the command is a list of source-code files we want compiled. We have only one file, `hello.c`. Now view this file:
 
 ```shell
 $ vim hello.s
@@ -130,30 +135,31 @@ Let's step through this line by line. The first few lines:
     .file   "hello.c"
 ```
 
-Lines that start with a period are generally assembler directives and not assembly code. They do not make it to the binary version of your code. `.file` lets the debugger know the original file name that generated this assembly code. It does not run any commands.<sup>1</sup>
+Lines that start with a period are generally assembler directives and not assembly code. They do not make it to the binary version of your code. They are annotations that help the compiler/linker create your executable. `.file` lets the debugger know the original file name that generated this assembly code. It does not run any commands.<sup>1</sup>
 
 ```
+    .text
     .section    .rodata
 .LC2:
     .string "Hello world!"
 ```
 
- `.section .rodata` declares that the following lines are read-only parts of memory. The items in this section are variables stored in memory and are organized by the identifier, data type and the literal value. You can think of the variables declared in this section as global and `const`. *The compiler may have given your code a different identifier than LC2*.
+Just looking at this first line of code sees a huge differnce between lecture and lab. `.text` and `.section .rodata` declares that the following lines are read-only parts of memory. The items in this section are variables stored in memory and are organized by the identifier, data type and the literal value. You can think of the variables declared in this section as global and `const`. *The compiler may have given your code a different identifier than LC2*.
  
  `.LC2:` is a tag, it indicates that the rest of the contents of the line, or what immidiately follows the line, should be associated with the identifier in the tag. Note that when we declared the string literal "Hello world!" we did not associate it with an identifier. We plugged it into the function call directly, with:
  
  ``` c
- printf( "Hello world!" );
+ printf( "Hello, I'm working!" );
  ```
  
-The compiler created a read-only variable for us automatically called `.LC0`. `.string` indicates that the data type is a string. If thought-of in terms of C code, it would look like this:
+The compiler created a read-only variable for us automatically called `.LC2`. `.string` indicates that the data type is a string. If thought-of in terms of C code, it would look like this:
  
  ```c
- char* LC2 = "Hello world!";
- printf( LC2 );
+ char* .LC2 = "Hello, I'm working!\0"; \\.LC2 is an invalid identifier for C but use for purposes of this example
+ printf( .LC2 );
  ```
  
-Moving on, now consider: 
+Evidently, the type `.string` automatically null terminates the string for you. Moving on, now consider: 
  
  ```
 .text
@@ -177,7 +183,7 @@ main:
     movq    $0, -32(%rbp)
 ```
 
-There's a whole lot going on here. Before we move on you must understand that x86 instructions, unlike MIPS, must specify the word length in the operation name. For example: `pushq` is a `push` command with word length `q` indicating quad word. In x86, a word is 16-bits, thus 4 * 16 = 64 bits. `movl` means `mov` with word length `l`. Here is a table explaining common formats:
+There's a whole lot going on here. Before we move on you must understand that x86 instructions, unlike MIPS, must specify the word length in the operation name. This is a requirement because in MIPS most instructions are word length is source and target. However, for x86, you can have varied length of source and target. For example: `pushq` is a `push` command with word length `q` indicating quad word. In x86, a word is 16-bits, thus 4 * 16 = 64 bits. So, `pushq` is pushing a 64 bit word to the stack. `movl` means `mov` with word length `l`. Here is a table explaining common formats:
 
 | Suffix | Meaning | Length |
 | :--- | :--- | :--- |
@@ -194,7 +200,7 @@ The first command we see is `pushq`, which saves the contents of the `%rbp` regi
 1. When we set up our stack frame, we need to restore everything to how it was before. So, we save `%rbp` so we can remember where the stack pointed to before our function was called.
 1. We do not store `%rbp` in registers because there are a finite number of registers and we do not know if other subroutines will clobber any register. It is important that we do not lose track of this address, so we place it on the stack in a specific spot. The *calling convention* you are using dictates where it is placed. 
 
-Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $32, %rsp`. Literal constants in GAS x86 are prefixed with `$`. 
+Moving on, `movq %rsp, %rbp` replaces the contents of `%rbp` with `%rsp`. This brings the start of the stack to the end of where it was previously. We claim a portion of the stack for ourselves by incrementing the stack pointer `%rsp`, and this command is carried out with `subq $32, %rsp`. Literal constants in GAS x86 are prefixed with `$`. Again, totally different from MIPS in lecture.
 
 Note the command `movl $86, -4(%rbp)`. Recall that we instantiated an integer with a value of 86. We called it `i`, but it appears that this name was lost. It is just an integer living at the memory address `-4(%rbp)`, which evaluates to: `%rbp` - 4. This also verifies the idea of scope. `i` was created within the scope of the `main` block. Later on, after `main` finishes, it should not be accessible by the previous function. This is implemented by reverting the stack to it's original state by moving the stack pointer. This is called *popping the stack* (which you should look forward to later on in the code). *Aside: This does not actually zero out or remove the value from the stack, it just moves the base and stack pointers. If someone knows where to look on the stack this is a potential security vulnerability, but discussion of it is beyond the scope of the class.*
 
@@ -218,9 +224,7 @@ Moving on past the stack, the following code calls `printf`. Note that to call `
     call    printf@PLT
 ```
 
-`call` calls the `printf` function. According to System V, arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9` in that order. Additional arguments, if needed, are passed in stack slots immmediately above the return address.<sup>2</sup> For our code, we only pass one argument to `printf`, a pointer to the string literal `Hello world!`. Recall that we associated it with the identifier `LC0`. So, we pass a pointer to the string literal `.LC0`. The `lea` instruction loads the address, rather than the value, into a register. The `q` suffix indicates it's a quadword. `%rip` literally means 'here' and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory. This is why `%rip` is used.
-
-*You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
+`call` calls the `printf` function. According to System V, arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9` in that order. Additional arguments, if needed, are passed in stack slots immmediately above the return address.<sup>2</sup> For our code, we only pass one argument to `printf`, a pointer to the string literal `Hello world!`. Recall that we associated it with the identifier `.LC0`. So, we pass a pointer to the string literal `.LC0`. The `lea` instruction loads the address, rather than the value, into a register. The `q` suffix indicates it's a quadword. `%rip` literally means 'here' and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory. This is why `%rip` is used. `movl $0, %eax` appears to have no use initially, it zeros out the `%eax` register, which is unused. This is most likely due to a convention of the compiler and has no effect for the purposes of our code. *You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
 
 Finally, we have two more instructions:
 
@@ -232,25 +236,32 @@ Finally, we have two more instructions:
 
 `movl` move a 32-bit value holding 0 into the `eax` register. Function return values are passed through a single register, `%ax`. `leave` cleans up the stack for us. *Aside: In other assembly languages, such as MIPS, you need to manually move the stack pointers but x86 has a convienient instruction to pop the whole stack for us.* `ret` returns from the function. These last three instructions are `return 0;` in C.
 
-Let's reassemble the program. The `assemble` target in the makefile will do this for us:
+Let's reassemble the program. Remember from lecture that there are two steps. First, we must create a binary:
 
 ``` shell
-$ make assemble
+$ gcc -O0 -c hello.s -o hello.o
 ```
 
-and you should get:
+The `-c` flag tells `gcc` that we want to compile the binary. `-c hello.s` indicates that we want to compile the binary `hello.s`. Note `-o hello.o`. By convention, unlinked binaries have the `.o` file extension. The second and last step to create an executable is:
+
+``` shell
+$ gcc -O0 hello.o -o hello.out
+```
+
+Note that we are passing the `.o` file to `gcc` this time, and the output is `.out` which is the file extension for executables in Linux. Test it out with:
 
 ``` shell
 $ ./hello.out
-Hello world!
+Hello, I'm working!$...
 ```
 
-If you want to get creative at this point you can modify `hello.s` line 4 to say something else, and you might want to throw in a new line while youre at it (`\n`):
+I guess we forgot to add `\n` in the string literal. If you want to get creative at this point you can modify `hello.s` line 4 to say something else, and you might want to throw in a new line while youre at it (`\n`):
 
 ```
 $ make assemble
 $ ./hello.out
-There is a realm of existence so far beyond your own you cannot even imagine it. I am beyond your comprehension. I am x.
+Hi Working, I'm dad.
+$...
 ```
 
 ### Part 2 - Print `i`
@@ -283,11 +294,9 @@ after `call printf@PLT`. The only differences between this second call and the f
 ```
 $ make assemble
 $ ./hello.out
-Hello world!
+Hi Working, I'm dad.
 86
 ```
-
-*Optional: The commands needed to compile assembly code to binary are not the same as compiling C-code to binary. If you're curious, look at the `makefile` directives `hello.o` and `assemble`.*
 
 ## Check off
 
@@ -306,3 +315,7 @@ Demonstrate the output of part 2. You must completed this via x86, and not C.
 <sup>5</sup>http://flint.cs.yale.edu/cs421/papers/x86-asm/asm.html
 
 <sup>6</sup>https://www3.nd.edu/~dthain/courses/cse40243/fall2015/intel-intro.html
+
+<sup>7</sup>https://www.tutorialspoint.com/what-should-main-return-in-c-cplusplus
+
+<sup>8</sup>https://docs.microsoft.com/en-us/windows/wsl/install-win10

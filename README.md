@@ -20,17 +20,60 @@ Introduction to the x86 assembly language
 
 ### Software
 
-This lab requires the following software: `gcc`, `make`, `git`. `odin.cs.csubak.edu` has these already installed.
+This lab requires the following software: `gcc` version 8.3.0, `make`, `git`. 
 
-### Compatability
+### Hardware
+
+This lab requires an x86 processor. It will not work on an ARM system (such as a Raspberry Pi).
+
+### OS Compatability
 
 | Linux | Mac | Windows |
 | :--- | :--- | :--- |
-| Must be on `odin.cs.csubak.edu`<sup>*</sup> | No<sup>*</sup> | No<sup>*</sup> |
+| Yes | No | Yes, with WSL |
 
-<sup>*</sup>Differences in GCC version and OS/kernel versions will cause big differences in how C code is translated to machine code.  
+This lab requires you to assemble an x86 program, the syntax and calling conventions of which are specific down to the operating system and version of `gcc` you are using. 
 
-This lab requires you to assemble an x86 program, the syntax and calling conventions of which are specific down to the operating system and version of GCC you are using. This lab manual is written assuming that you're on the department's server, `odin.cs.csubak.edu`. Future labs may have relaxed compatability with other environments.
+#### Linux 
+
+Assumes that you are running Debian GNU/Linux 10 (buster). You can check this with the command `cat /etc/os-release`:
+
+```
+$ cat /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 10 (buster)"
+NAME="Debian GNU/Linux"
+VERSION_ID="10"
+VERSION="10 (buster)"
+VERSION_CODENAME=buster
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+```
+
+If you're not sure if you have `git`, `make` and `gcc`, you can install them on Ubuntu or Debian with the following command:
+
+```
+$ sudo apt-get install build-essential git
+```
+
+`build-essential` installs `gcc` and `make`, but not `git`, hence why it was added at the end. This lab assumes that you have `gcc` version 8.3.0. You can check your `gcc` version with the command `gcc --version`:
+
+```
+$ gcc --version
+gcc (Debian 8.3.0-6) 8.3.0
+Copyright (C) 2018 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+#### Macintosh
+
+This lab uses `gcc` to compile binaries. With Macintosh computers, `gcc` is an alias for `clang` which is a different compiler. This may result in huge differences if you attempt to run the lab.
+
+#### Windows
+
+It is possible for you to continue this lab on Windows if you install the Windows Subsystem for Linux (WSL). Please make sure you install Debian 10 for consistency with the lab manual. Once this is done refer to the Linux subsection for installation/checking of appropriate software.
 
 ## Background
 

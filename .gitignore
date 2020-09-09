@@ -1,6 +1,9 @@
 # Lab specific
 *.s
 
+# VIM
+*.swp
+
 # Prerequisites
 *.d
 

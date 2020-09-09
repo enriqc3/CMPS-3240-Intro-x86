@@ -250,9 +250,7 @@ at the end of the source code. Moving on past the stack, the following code call
 
 `call` calls the `printf` function. According to the environment we're using (System V), arguments are passed in registers: `%rdi`, `%rsi`, `%rdx`, `%rcx`, `%r8`, `%r9` in that order. Additional arguments, if needed, are passed in stack slots immediately above the return address.<sup>2</sup> For our code, we only pass one argument to `printf`, a pointer to the string literal `Hello world!`. Recall that we associated it with the identifier `.LC0`. So, we pass a pointer to the string literal `.LC0`. The `lea` instruction loads the address, rather than the value, into a register. The `q` suffix indicates it's a quadword. Pointers in x86 are 64-bits. `%rip` literally means 'here' and `.LC0(%rip)` grabs the difference of the address of the current instruction and `.LC0`. Note that we know the relative distance between `.LC0` and the current instruction but we are unsure of where exactly the first line of this program will be placed absolutely in memory by the linker. This is why `%rip` is used and not just `.LC0`.
 
-`movl $0, %eax` appears to have no use initially, it zeros out the `%eax` register, which is unused in our `main()` function. This is most likely due to a convention of the compiler and has no effect for the purposes of our code. You'll see this a lot, the compiler does things that make no sense and appear to waste instructions. Sometimes it's a waste, but sometimes it's a requirement of the calling convention. *You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
-
-Finally, we have two more instructions:
+`movl $0, %eax` appears to have no use initially, it zeros out the `%eax` register, which is unused in our `main()` function. This does something important for `printf()` which you should just accept as a requirement.<sup>3</sup> Finally, we have two more instructions:
 
 ```
     movl    $0, %eax
@@ -260,7 +258,9 @@ Finally, we have two more instructions:
     ret
 ````
 
-`movl` moves a 32-bit value holding 0 into the `eax` register. Function return values are passed through a single register, `%ax`. When you reference `%ax` as `%eax` it implies the value should be 32 bits. `leave` cleans up the stack for us. *Aside: In other assembly languages, such as MIPS, you need to manually move the stack pointers but x86 has a convenient instruction to pop the whole stack for us.* `ret` returns from the function. These last three instructions are `return 0;` in C.
+`movl` moves a 32-bit value holding 0 into the `eax` register. Function return values are passed through a single register, `%ax`. When you reference `%ax` as `%eax` it implies the value should be 32 bits.  *You should probably look at reference 2 for an explanation of the different registers, and how they are related. E.g., rax is a 64 bit register. eax is the lower 32 bits of the rax register, and so on.*
+
+`leave` cleans up the stack for us. *Aside: In other assembly languages, such as MIPS, you need to manually move the stack pointers but x86 has a convenient instruction to pop the whole stack for us.* `ret` returns from the function. These last three instructions are `return 0;` in C.
 
 Let's reassemble the program. Remember from lecture that there are two steps to compiling a program. First, we must create a binary:
 
